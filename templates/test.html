@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title></title>
+
+    <!-- Bootstrap Core CSS -->
+    <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ STATIC_URL }}css/clean-blog.css" rel="stylesheet">
+
+
+</head>
+
+
+<body>
+
+   <div class="container-fluid">
+        <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+            <div id="test">
+                <input id="test1" class="typeahead" type="text" placeholder="Countries">
+            </div>
+        </div>
+    </div>
+
+   <div class="example" id="scrollable-dropdown-menu">
+       <h2 class="example-name">Scrollable Dropdown Menu</h2>
+
+       <div class="demo">
+           <input class="typeahead" type="text" placeholder="Countries">
+       </div>
+
+   </div>
+
+</body>
+
+<!-- jQuery -->
+<script src="{{ STATIC_URL }}js/jquery.js"></script>
+ <script src="{{ STATIC_URL }}js/typeahead.bundle.js"></script>
+<!-- Bootstrap Core JavaScript -->
+<script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
+
+<script type="application/javascript">
+    $(document).ready(function(){
+
+
+        alert('Working');
+        $('#test1').typeahead(null, {
+              name: 'cars',
+              source: ['Audi', 'BMW', 'Bugatti', 'Ferrari', 'Ford', 'Lamborghini', 'Mercedes Benz', 'Porsche', 'Rolls-Royce', 'Volkswagen']
+        });
+
+
+    });
+
+    var arabicPhrases = new Bloodhound({
+        datumTokenizer: Bloodhound.tokenizers.obj.whitespace('word'),
+        queryTokenizer: Bloodhound.tokenizers.whitespace,
+        local: [
+        { word: "Audi" },
+        { word: "BMW" },
+        { word: "Bugati" },
+        { word: "Ferari" },
+        { word: "Ford" }
+        ]
+    });
+
+    arabicPhrases.initialize();
+
+    $('#scrollable-dropdown-menu .typeahead').typeahead(null, {
+        name: 'countries',
+        displayKey: 'word',
+        source: arabicPhrases.ttAdapter()
+    });
+</script>
+
+</html>
