@@ -531,9 +531,13 @@ a:hover {
     height:100%;
 }
 
-#hospital_table .modal-dialog  {width:1000px;
-    }
+#hospital_table_modal .modal-dialog {
+    width: 90%;
+}
 
+#hospital_form {
+    z-index:2000;
+}
 /*
 @media screen and (min-width: 768px) {
 
