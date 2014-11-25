@@ -58,5 +58,4 @@ def submit_form(request):
     form = HospitalForm(request.POST)
     if form.is_valid():
         form.save(commit=False)
-        print(request.user)
     return HttpResponse();

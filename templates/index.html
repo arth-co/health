@@ -138,33 +138,6 @@
     </div>
 </div>
 
-{% verbatim %}
-<script type="text/x-handlebars" id="hospital_table_template">
-    <table id="{{tableID}}" class="table table-striped table-bordered table-hover" cellspacing="0" width="100%">
-        <thead>
-        <tr>
-            <th>Name</th>
-            <th>City</th>
-            <th>Type</th>
-            <th>Speciality</th>
-            <th>Subsidy</th>
-        </tr>
-        </thead>
-        <tbody>
-        {{#hospitals}}
-        <tr>
-            <td>{{name}}</td>
-            <td>{{city}}</td>
-            <td>{{type}}</td>
-            <td>{{speciality}}</td>
-            <td>{{subsidy}}</td>
-        </tr>
-        {{/hospitals}}
-        </tbody>
-    </table>
-</script>
-{% endverbatim %}
-
 
 <!-- Modal -->
 <div class="modal fade" id="hospital_form_modal" tabindex="-1" role="dialog" data-backdrop="static"
@@ -178,7 +151,7 @@
             </div>
             <div class="modal-body">
                 <form id="hospital_form" method="post">
-
+                    {{ form.as_p }}
                 </form>
             </div>
             <div class="modal-footer">
@@ -262,7 +235,6 @@
 <script src="{{ STATIC_URL }}js/jquery.cookie.js"></script>
 <!-- Bootstrap Core JavaScript -->
 <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
-<script src="{{ STATIC_URL }}js/handlebars-v2.0.0.js"></script>
 
 
 <script src="//cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js"></script>
@@ -285,8 +257,8 @@
 <script type="application/javascript">
     $(document).ready(function () {
 
-        var template = Handlebars.compile($('#hospital_table_template').html());
-        var table, table_data;
+        //var template = Handlebars.compile($('#hospital_table_template').html());
+        var table, table_data, id;
         $.widget("custom.catcomplete",
                 $.ui.autocomplete,
                 {
@@ -330,11 +302,8 @@
                         success: function (data) {
                             //alert('I am successful');
                             console.log(data);
-                            /*$('#hospital_table_modal_body').empty();
-                            $('#hospital_table_modal_body').append(template({'hospitals': data,
-                                'tableID': 'hospital_table'}));
-                            */
-
+                            if ($.fn.dataTable.isDataTable( '#hospital_table' ))
+                                table.destroy();
                             table = $('#hospital_table').dataTable(data);
 
                             $('#hospital_table tbody').on('click', 'tr', function () {
@@ -377,8 +346,7 @@
                             id: ui.item.id
                         },
                         success: function(data){
-                            $('#hospital_form').empty();
-                            $('#hospital_form').append(data);
+
                             openHospitalForm();
                         }
                     });
@@ -396,24 +364,30 @@
             var activeRow = table.find('tr.active');
             if (activeRow.length > 0) {
                 var activeIndex = table.fnGetPosition(activeRow[0]);
-                console.log(table.fnGetData(activeIndex));
+                var active_hospital = table.fnGetData(activeIndex);
+                for (var key in active_hospital) {
+                    $('#id_'+ key).val(active_hospital[key])
+                }
+                id = active_hospital['id'];
             }
+            hideHospitalTable();
+            openHospitalForm();
+
         });
 
-
-
-
         $('#hospital_form_save').on('click',function(){
+            var form_data = $('#hospital_form').serialize();
+            form_data['id'] = id;
             $.ajax({
-                        url: '/submit_form/',
-                        type: 'POST',
-                        headers: {
-                            'X-CSRFToken': $.cookie('csrftoken')
-                        },
-                        data: $('#hospital_form').serialize(),
-                        success: function(data){
-                            alert('balle')
-                        }
+                    url: '/submit_form/',
+                    type: 'POST',
+                    headers: {
+                        'X-CSRFToken': $.cookie('csrftoken')
+                    },
+                    data: form_data,
+                    success: function(data){
+
+                    }
                 })
             });
 

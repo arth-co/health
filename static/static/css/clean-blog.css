@@ -535,9 +535,15 @@ a:hover {
     width: 90%;
 }
 
-#hospital_form {
-    z-index:2000;
+
+#hospital_form_modal {
+    position: absolute !important;
+    overflow: auto !important;
 }
+
+
+
+
 /*
 @media screen and (min-width: 768px) {
 
