@@ -1,10 +1,10 @@
 __author__ = 'Himanshu'
 
-from crispy_forms.helper import FormHelper
-from crispy_forms.layout import Layout, Submit, HTML, Field
-from crispy_forms.bootstrap import StrictButton, FieldWithButtons
+
 from .models import Hospital, City
 from django import forms
+from django.forms import TypedChoiceField, TypedMultipleChoiceField
+from django.forms.widgets import TextInput
 
 class HospitalForm(forms.ModelForm):
 
@@ -16,10 +16,14 @@ class HospitalForm(forms.ModelForm):
         # Assign attributes to each field
         for key in self.fields:
             # Assign classes (for CSS decoration and JavaScript validation)
-            self.fields[key].widget.attrs['class'] = 'form-control'
+            #self.fields[key].widget.attrs['class'] = 'form-control'
             # Assign the autocomplete feature
-            self.fields[key].widget.attrs['autocomplete'] = 'on'
-            self.fields[key].widget.attrs['name'] = ''
+
+            self.fields[key].widget.attrs['autocomplete'] = 'off'
+            self.fields[key].widget.attrs.update({'placeholder': self.fields[key].label, 'class':'form-control '})
+            #self.fields[key].label = ''
+
+               #self.fields[key].empty_label = self.fields[key].label
         # Assign form field placeholders
         # Assign JavaScript validation messages
         #self.fields['subsidy'].widget = forms.text
@@ -30,6 +34,7 @@ class HospitalForm(forms.ModelForm):
     class Meta:
         model = Hospital
         fields = '__all__'
+
 
 
 class CityForm(forms.ModelForm):

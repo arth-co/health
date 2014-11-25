@@ -32,7 +32,8 @@
     <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
 
-
+    <link type="text/css" rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500">
+    <script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=places"></script>
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
     <!--[if lt IE 9]>
@@ -44,7 +45,6 @@
 
 
 <body>
-
 <!-- Navigation -->
 <nav class="navbar navbar-default navbar-custom navbar-fixed-top">
     <div class="container-fluid">
@@ -108,31 +108,31 @@
     </div>
 </header>
 
+<div id="locationField">
+    <input id="autocomplete" placeholder="Enter your address" onFocus="geolocate()" type="text"></input>
+</div>
+
 <!-- Main Content -->
 <div class="container">
     <div class="row">
         <div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
             <div class="post-preview">
-                <a href="post.html">
-                    <h2 class="post-title">
-                        Man must explore, and this is exploration at its greatest
-                    </h2>
 
-                    <h3 class="post-subtitle">
-                        Problems look mighty small from 150 miles up
-                    </h3>
-                </a>
+                <h2 class="post-title">
+                    Hospital Database
+                </h2>
+
+                <h4 class="post-subtitle">
+                    Together we can work towards universalizing HealthCare
+                </h4>
+
 
                 <p class="post-meta">Posted by <a href="#">Start Bootstrap</a> on September 24, 2014</p>
             </div>
             <hr>
 
-            <!-- Pager -->
-            <ul class="pager">
-                <li class="next">
-                    <a href="#">Older Posts &rarr;</a>
-                </li>
-            </ul>
+
+
         </div>
     </div>
 </div>
@@ -146,7 +146,7 @@
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
                         class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="myModalLabel">Enter the relevant Details</h4>
+                <h4 class="modal-title" id="hospital_name"></h4>
             </div>
 
             <form id="hospital_form" method="post">
@@ -286,13 +286,27 @@
 
 
 <script type="application/javascript">
+
+
     $(document).ready(function () {
 
+        var autocomplete;
+        function initialize() {
+            autocomplete = new google.maps.places.Autocomplete(
+            /** @type {HTMLInputElement} */(document.getElementById('autocomplete')),
+            { types: ['geocode'] });
+            google.maps.event.addListener(autocomplete, 'place_changed', function() {
+            });
+        }
+        initialize();
+
+
         //var template = Handlebars.compile($('#hospital_table_template').html());
-        var table, table_data, pk;
+        var table, table_data;
 
 
 
+        //console.log(cityList);
         var activeRecord = {
             data: {},
             pk: -1,
@@ -304,6 +318,8 @@
                 for (var key in this.data) {
                     $('#id_'+ key).val(this.data[key])
                 }
+                $('#id_name').hide();
+                $('#id_city').hide();
                 openHospitalForm();
             },
 
@@ -425,6 +441,21 @@
                 }
             });
 
+        $('#id_name').catcomplete({
+            source: "/query_similar_hospitals/?" + $(this).val(),
+            minLength: 4,
+            select: function (event, ui) {
+                alert('wow');
+            }
+
+        });
+
+        $('#id_city').autocomplete({
+            source: {{ city_list }},
+            minLength: 3
+        });
+        $('#id_type').autocomplete();
+        $('#id_speciality').autocomplete();
 
         $('#menu_add_hospital').on('click', function () {
             openHospitalForm();
@@ -460,6 +491,10 @@
         });
 
         $('#add_hospital').on('click',function(){
+            activeRecord.resetFormData();
+        });
+
+        $('#hospital_row_add').on('click',function(){
             activeRecord.resetFormData();
         });
 

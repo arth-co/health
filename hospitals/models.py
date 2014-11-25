@@ -31,6 +31,13 @@ STREAM_CHOICES = (('Allopathy','Allopathy'),
 
 class City(models.Model):
     name = models.CharField(max_length=100,null=False, blank=False)
+
+    @staticmethod
+    def get_list():
+        city_list = [curr.name for curr in City.objects.all()]
+        return city_list
+
+
     def __str__(self):
         return str(self.name)
 
@@ -40,13 +47,13 @@ class Hospital(models.Model):
     address = models.CharField(max_length=200,blank=True)
 
     type = models.CharField(max_length=25,
-                  choices=TYPE_CHOICES, default='Charitable',blank=True)
+                  choices=TYPE_CHOICES, blank=False, null=True)
 
     speciality = models.CharField(max_length=25,
-                  choices=SPECIALITY_CHOICES, default='Allopathic' ,blank=True)
+                  choices=SPECIALITY_CHOICES,blank=False, null=True)
 
     stream = models.CharField(max_length=25,
-                  choices=STREAM_CHOICES, default='General - MultiSpeciality' ,blank=True)
+                  choices=STREAM_CHOICES, default=None ,blank=True)
 
     subsidy = models.CharField(max_length=200, blank=True)
     created_by = models.ForeignKey(User, related_name='created_by')

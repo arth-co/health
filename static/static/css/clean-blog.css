@@ -541,8 +541,9 @@ a:hover {
     overflow: auto !important;
 }
 
-
-
+.ui-autocomplete {
+    z-index: 5000;
+}
 
 /*
 @media screen and (min-width: 768px) {
