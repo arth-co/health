@@ -27,11 +27,11 @@
 
 
     <!-- Custom Fonts -->
-    <!--
+
     <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
     <link href='http://fonts.googleapis.com/css?family=Lora:400,700,400italic,700italic' rel='stylesheet' type='text/css'>
     <link href='http://fonts.googleapis.com/css?family=Open+Sans:300italic,400italic,600italic,700italic,800italic,400,300,600,700,800' rel='stylesheet' type='text/css'>
-    -->
+
 
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -99,9 +99,8 @@
                     </div>
 
                     <span class="h4">Can't find a hospital in our database?</span>
-                    <button class="btn-link">
+                    <button class="btn-link" id="add_hospital">
                         <span class="h4">Add it Now </span>
-                        <span class="glyphicon glyphicon-plus"></span>
                     </button>
                 </div>
             </div>
@@ -149,15 +148,18 @@
                         class="sr-only">Close</span></button>
                 <h4 class="modal-title" id="myModalLabel">Enter the relevant Details</h4>
             </div>
-            <div class="modal-body">
-                <form id="hospital_form" method="post">
+
+            <form id="hospital_form" method="post">
+                <div class="modal-body">
                     {{ form.as_p }}
-                </form>
-            </div>
+                </div>
+            </form>
+
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                 <button type="submit" class="btn btn-primary" id="hospital_form_save">Save changes</button>
             </div>
+
         </div>
     </div>
 </div>
@@ -190,6 +192,35 @@
     </div>
 </div>
 <!-- /.modal -->
+<!-- Modal -->
+<div class="modal fade modal-megamenu" id="hospital_table_modal" tabindex="-1" role="dialog"
+     aria-labelledby="hospitalList"
+     aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span
+                        aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                <h4 class="modal-title" id="myModalLabel">Hospital List </h4>
+
+            </div>
+
+            <div id="hospital_table_modal_body" class="modal-body">
+                <table id="hospital_table" class="table table-striped table-bordered table-hover" cellspacing="0" width="100%">
+                </table>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" id="hospital_row_add">Add</button>
+                <button type="button" class="btn btn-primary" id="hospital_row_edit">Edit</button>
+                <button type="submit" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+
 <hr>
 
 <!-- Footer -->
@@ -258,7 +289,43 @@
     $(document).ready(function () {
 
         //var template = Handlebars.compile($('#hospital_table_template').html());
-        var table, table_data, id;
+        var table, table_data, pk;
+
+
+
+        var activeRecord = {
+            data: {},
+            pk: -1,
+            $form: $('#hospital_form'),
+
+            setFormData: function (activeData){
+                this.data = activeData;
+                this.pk = activeData['pk'];
+                for (var key in this.data) {
+                    $('#id_'+ key).val(this.data[key])
+                }
+                openHospitalForm();
+            },
+
+            getFormData: function() {
+                var unindexed_array = this.$form.serializeArray();
+                var indexed_array = {};
+
+                $.map(unindexed_array, function (n, i) {
+                    indexed_array[n['name']] = n['value'];
+                });
+
+                return indexed_array;
+            },
+
+            resetFormData: function(){
+                this.pk = -1;
+                this.$form.find('input:text, input:password, input:file, select, textarea').val('');
+                this.$form.find('input:radio, input:checkbox').removeAttr('checked').removeAttr('selected');
+                openHospitalForm();
+            }
+        }
+
         $.widget("custom.catcomplete",
                 $.ui.autocomplete,
                 {
@@ -288,7 +355,6 @@
             source: "/multi_field_search/?" + $(this).val(),
             minLength: 4,
             select: function (event, ui) {
-                console.log(ui.item.value);
 
                 if (ui.item.category === 'Cities') {
                     $.ajax({
@@ -324,8 +390,8 @@
                                     table.$('tr.active').removeClass('active');
                                     $(this).addClass('active');
                                 }
-
-                                console.log(table.fnGetPosition(this));
+                                var activeData = table.fnGetData(activeIndex);
+                                activeRecord.setFormData(activeData);
                                 openHospitalForm();
                             });
 
@@ -339,17 +405,21 @@
                     });
                 }
                 else if (ui.item.category === 'Hospitals') {
-                    $.ajax({
+                    console.log(ui.item.data);
+                    activeRecord.setFormData(ui.item.data);
+                    openHospitalForm();
+
+                    /*$.ajax({
                         url: '/query_hospital/',
                         type: 'GET',
                         data: {
                             id: ui.item.id
                         },
                         success: function(data){
-
+                            activeRecord.setup(data);
                             openHospitalForm();
                         }
-                    });
+                    });*/
                 }
 
                 }
@@ -364,36 +434,41 @@
             var activeRow = table.find('tr.active');
             if (activeRow.length > 0) {
                 var activeIndex = table.fnGetPosition(activeRow[0]);
-                var active_hospital = table.fnGetData(activeIndex);
-                for (var key in active_hospital) {
-                    $('#id_'+ key).val(active_hospital[key])
-                }
-                id = active_hospital['id'];
-            }
-            hideHospitalTable();
-            openHospitalForm();
+                var activeData = table.fnGetData(activeIndex);
+                activeRecord.setFormData(activeData);
+                //hideHospitalTable();
 
+            }
         });
 
         $('#hospital_form_save').on('click',function(){
-            var form_data = $('#hospital_form').serialize();
-            form_data['id'] = id;
+            var form_data = activeRecord.getFormData($('#hospital_form'));
+            form_data['pk'] = activeRecord.pk;
+
             $.ajax({
                     url: '/submit_form/',
                     type: 'POST',
+                    data: form_data,
                     headers: {
                         'X-CSRFToken': $.cookie('csrftoken')
                     },
-                    data: form_data,
-                    success: function(data){
 
+                    success: function(data){
+                        hideHospitalForm();
                     }
-                })
-            });
+                });
+        });
+
+        $('#add_hospital').on('click',function(){
+            activeRecord.resetFormData();
+        });
 
         function openHospitalForm() {
-
             $('#hospital_form_modal').modal('show');
+        }
+
+        function hideHospitalForm() {
+            $('#hospital_form_modal').modal('hide');
         }
 
         function openHospitalTable() {
@@ -403,8 +478,6 @@
         function hideHospitalTable() {
             $('#hospital_table_modal').modal('hide');
         }
-
-
 
     });
 </script>

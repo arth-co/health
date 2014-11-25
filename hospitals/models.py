@@ -59,7 +59,7 @@ class Hospital(models.Model):
 
     def as_dict(self):
         return {
-            'id':self.id,
+            'pk':self.pk,
             'name': self.name,
             'city':self.city,
             'address':self.address,
@@ -72,7 +72,7 @@ class Hospital(models.Model):
 
     def as_list(self):
         return [
-            self.id,
+            self.pk,
             self.name,
             self.city,
             #self.address,
@@ -84,8 +84,8 @@ class Hospital(models.Model):
     @staticmethod
     def columns():
         return [
-            {'data':'id',
-             'title':'ID',
+            {'data':'pk',
+             'title':'PK',
              },
             {'data':'name',
              'title':'Name'},

@@ -2,6 +2,8 @@ from django.shortcuts import render, render_to_response, RequestContext
 from .forms import HospitalForm
 from django.http import HttpResponse, JsonResponse
 from .models import Hospital, City
+from django.contrib.auth.models import User
+
 import json
 # Create your views here.
 def home(request):
@@ -19,13 +21,17 @@ def test(request):
 
 def multi_field_search(request):
     query_text = request.GET.get('term')
+
+    # Search through the Hospital Database
     print(query_text)
     hospitals_query = Hospital.objects.filter(name__contains=query_text)
-    hospital_list = [{'id':curr.id,
+    hospital_list = [{'data':curr.as_dict(),
                       'label':curr.name + "," + curr.city,
                       'category':'Hospitals'}
                      for curr in hospitals_query]
     print(json.dumps(hospital_list))
+
+    # Search through the City Database
     cities_query = City.objects.filter(name__contains=query_text)
     cities_list = [{'label':curr.name, 'category':'Cities'} for curr in cities_query]
     print(json.dumps(hospital_list + cities_list))
@@ -55,7 +61,25 @@ def query_hospital(request):
 
 
 def submit_form(request):
-    form = HospitalForm(request.POST)
-    if form.is_valid():
-        form.save(commit=False)
-    return HttpResponse();
+    try:
+        print(request.POST)
+        pk = request.POST.get('pk')
+
+        if int(pk) is not -1:
+            model_instance = Hospital.objects.get(pk=pk)
+            form = HospitalForm(request.POST, instance=model_instance)
+            if form.is_valid():
+                model_instance.modified_by = request.user
+                model_instance.save()
+            return HttpResponse()
+        else:
+            form = HospitalForm(request.POST)
+            if form.is_valid():
+                print('Form was valid')
+                model_instance = form.save(commit=False)
+                model_instance.created_by = User.objects.get(username='admin')
+                model_instance.edited_by = User.objects.get(username='admin')
+                model_instance.save()
+                return HttpResponse()
+    except:
+        raise LookupError
