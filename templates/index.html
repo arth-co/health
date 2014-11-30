@@ -13,10 +13,7 @@
 
     <!-- Bootstrap Core CSS -->
     <link href="{{ STATIC_URL }}css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Modal CSS
-    <link href="{{ STATIC_URL }}css/bootstrap-modal-bs3patch.css" rel="stylesheet">
-    <link href="{{ STATIC_URL }}css/bootstrap-modal.css" rel="stylesheet">
-    -->
+
 
     <!-- Custom CSS -->
     <link href="{{ STATIC_URL }}css/clean-blog.css" rel="stylesheet">
@@ -42,6 +39,10 @@
     <![endif]-->
 
 </head>
+
+
+{% include 'hospital_forms.html' %}
+
 
 
 <body>
@@ -108,9 +109,6 @@
     </div>
 </header>
 
-<div id="locationField">
-    <input id="autocomplete" placeholder="Enter your address" onFocus="geolocate()" type="text"></input>
-</div>
 
 <!-- Main Content -->
 <div class="container">
@@ -130,39 +128,12 @@
                 <p class="post-meta">Posted by <a href="#">Start Bootstrap</a> on September 24, 2014</p>
             </div>
             <hr>
-
-
-
         </div>
     </div>
 </div>
 
 
-<!-- Modal -->
-<div class="modal fade" id="hospital_form_modal" tabindex="-1" role="dialog" data-backdrop="static"
-     aria-labelledby="hospital_form_modal" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
-                        class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="hospital_name"></h4>
-            </div>
 
-            <form id="hospital_form" method="post">
-                <div class="modal-body">
-                    {{ form.as_p }}
-                </div>
-            </form>
-
-            <div class="modal-footer">
-                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="submit" class="btn btn-primary" id="hospital_form_save">Save changes</button>
-            </div>
-
-        </div>
-    </div>
-</div>
 
 
 <!-- Modal -->
@@ -192,6 +163,7 @@
     </div>
 </div>
 <!-- /.modal -->
+
 <!-- Modal -->
 <div class="modal fade modal-megamenu" id="hospital_table_modal" tabindex="-1" role="dialog"
      aria-labelledby="hospitalList"
@@ -218,6 +190,39 @@
         </div>
     </div>
 </div>
+
+<!-- Modal -->
+<div class="modal fade" id="hospital_form_modal" tabindex="-1" role="dialog" data-backdrop="static"
+     aria-labelledby="hospital_form_modal" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span
+                        class="sr-only">Close</span></button>
+                <h4 class="modal-title">Enter Hospital Details</h4>
+            </div>
+
+            <form id="hospital_form" method="post">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    {% for field in form %}
+                    <p>
+                      {{ field.errors }}
+                      {{ field }}
+                    </p>
+                    {% endfor %}
+                </div>
+            </form>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="submit" class="btn btn-primary" id="hospital_form_save">Save changes</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
 
 
 
@@ -268,6 +273,7 @@
 <script src="{{ STATIC_URL }}js/bootstrap.min.js"></script>
 
 
+
 <script src="//cdn.datatables.net/1.10.4/js/jquery.dataTables.min.js"></script>
 <script src="//cdn.datatables.net/plug-ins/9dcbecd42ad/integration/bootstrap/3/dataTables.bootstrap.js"></script>
 
@@ -301,7 +307,7 @@
         initialize();
 
 
-        //var template = Handlebars.compile($('#hospital_table_template').html());
+        //var template = Handlebars.compile($('#hospital_form_modal_template').html());
         var table, table_data;
 
 
@@ -315,11 +321,11 @@
             setFormData: function (activeData){
                 this.data = activeData;
                 this.pk = activeData['pk'];
+
                 for (var key in this.data) {
-                    $('#id_'+ key).val(this.data[key])
+                    $('#id_'+ key).val(this.data[key]);
                 }
-                $('#id_name').hide();
-                $('#id_city').hide();
+
                 openHospitalForm();
             },
 
@@ -485,6 +491,8 @@
                     },
 
                     success: function(data){
+
+                        table.fnDraw();
                         hideHospitalForm();
                     }
                 });

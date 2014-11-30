@@ -539,6 +539,7 @@ a:hover {
 #hospital_form_modal {
     position: absolute !important;
     overflow: auto !important;
+    z-index: 6000;
 }
 
 .ui-autocomplete {
